@@ -48,7 +48,7 @@
       stopSpeech();loadVoices();
       const voices=voiceList.filter(v=>/^(zh[-_](CN|SG|TW)|cmn)/i.test(v.lang));
       const voice=voices.find(v=>/natural|premium|enhanced/i.test(v.name))||voices.find(v=>/^zh[-_]CN$/i.test(v.lang))||voices[0];
-      const u=new SpeechSynthesisUtterance(text);speech=u;u.lang=voice?voice.lang:'zh-CN';if(voice)u.voice=voice;u.rate=Number(el('speechRate').value);u.pitch=1;u.volume=1;
+      const u=new SpeechSynthesisUtterance(text);speech=u;u.lang=voice?voice.lang:'zh-CN';if(voice)u.voice=voice;u.rate=['妈','麻','马','骂','吗'].includes(text)?0.45:Number(el('speechRate').value);u.pitch=1;u.volume=1;
       soundStatus('กำลังเตรียมเสียง '+text+'…');
       speechTimer=setTimeout(()=>{if(speech===u){stopSpeech();soundStatus('เสียงไม่ตอบสนอง กรุณาเปิดใน Safari หรือ Chrome และตรวจว่ามีเสียงอ่านภาษาจีนกลางในเครื่อง')}},12000);
       u.onstart=()=>{if(speech===u)soundStatus('กำลังอ่าน '+text)};
