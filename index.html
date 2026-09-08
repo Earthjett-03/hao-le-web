@@ -40,26 +40,27 @@
     const el=id=>document.getElementById(id);
     let speech=null,speechTimer=null,voiceList=[];
     function soundStatus(message){el('soundStatus').textContent=message}
-    function stopSpeech(){clearTimeout(speechTimer);speech=null;if('speechSynthesis'in window)window.speechSynthesis.cancel()}
+    let audioPlayer=null,audioText='',audioRequest=0;
+    function stopSpeech(){audioRequest++;if(audioPlayer){audioPlayer.pause();audioPlayer.removeAttribute('src');audioPlayer.load();audioPlayer=null}audioText='';clearTimeout(speechTimer);speech=null;if('speechSynthesis'in window)window.speechSynthesis.cancel()}
     function loadVoices(){voiceList=window.speechSynthesis.getVoices()}
     function speak(text){
-      if(!('speechSynthesis'in window)){soundStatus('เบราว์เซอร์นี้ไม่รองรับเสียงอ่าน ลองเปิดลิงก์ใน Safari หรือ Chrome');return}
-      if(speech&&speech.text===text)return;
-      stopSpeech();loadVoices();
-      const voices=voiceList.filter(v=>/^(zh[-_](CN|SG|TW)|cmn)/i.test(v.lang));
-      const voice=voices.find(v=>/natural|premium|enhanced/i.test(v.name))||voices.find(v=>/^zh[-_]CN$/i.test(v.lang))||voices[0];
-      const u=new SpeechSynthesisUtterance(text);speech=u;u.lang=voice?voice.lang:'zh-CN';if(voice)u.voice=voice;u.rate=['妈','麻','马','骂','吗'].includes(text)?0.45:Number(el('speechRate').value);u.pitch=1;u.volume=1;
-      soundStatus('กำลังเตรียมเสียง '+text+'…');
-      speechTimer=setTimeout(()=>{if(speech===u){stopSpeech();soundStatus('เสียงไม่ตอบสนอง กรุณาเปิดใน Safari หรือ Chrome และตรวจว่ามีเสียงอ่านภาษาจีนกลางในเครื่อง')}},12000);
-      u.onstart=()=>{if(speech===u)soundStatus('กำลังอ่าน '+text)};
-      u.onend=()=>{if(speech===u){clearTimeout(speechTimer);speech=null;soundStatus('อ่านจบแล้ว แตะเพื่อฟังซ้ำได้')}};
-      u.onerror=()=>{if(speech===u){clearTimeout(speechTimer);speech=null;soundStatus('เล่นเสียงไม่ได้ ลองเปิดใน Safari หรือ Chrome และเปิดใช้เสียงอ่านภาษาจีนกลาง')}};
-      try{window.speechSynthesis.resume();window.speechSynthesis.speak(u)}catch{stopSpeech();soundStatus('ไม่สามารถเปิดเสียงอ่านบนเบราว์เซอร์นี้ได้')}
+      if(audioPlayer&&audioText===text)return;
+      stopSpeech();const request=audioRequest;
+      const mode=Number(el('speechRate').value)<.8?'slow':'normal';
+      const filename=Array.from(text,c=>c.codePointAt(0).toString(16)).join('-');
+      const player=new Audio('./audio/'+filename+'-'+mode+'.mp3');audioPlayer=player;audioText=text;
+      soundStatus('กำลังโหลดเสียง '+text+'…');
+      const failed=()=>{if(request!==audioRequest)return;stopSpeech();soundStatus('โหลดเสียงไม่ได้ ตรวจอินเทอร์เน็ตแล้วแตะเพื่อลองอีกครั้ง')};
+      speechTimer=setTimeout(failed,15000);
+      player.onplaying=()=>{if(request===audioRequest){clearTimeout(speechTimer);soundStatus('กำลังอ่าน '+text)}};
+      player.onended=()=>{if(request===audioRequest){stopSpeech();soundStatus('อ่านจบแล้ว แตะเพื่อฟังซ้ำได้')}};
+      player.onerror=failed;
+      player.play().catch(failed);
     }
     const soundPanel=document.createElement('section');soundPanel.style.cssText='padding:16px;border:1px solid var(--line);border-radius:14px;margin-bottom:20px';
     soundPanel.innerHTML='<label for="speechRate">ความเร็วเสียง </label><select id="speechRate" style="font:inherit;padding:8px"><option value="0.9">ธรรมชาติ</option><option value="0.7">ช้า · ฝึกพูดตาม</option></select> <button class="tab" onclick="speak(\'你好\')">ทดสอบเสียง</button> <button class="tab" onclick="stopSpeech();soundStatus(\'หยุดเสียงแล้ว\')">หยุด</button><p id="soundStatus" role="status" aria-live="polite" style="margin:10px 0 0;min-height:26px">แตะคำศัพท์เพื่อฟัง เสียงขึ้นอยู่กับเสียงภาษาจีนที่มีในเครื่อง</p>';
     document.querySelector('.content').prepend(soundPanel);
-    if('speechSynthesis'in window){loadVoices();window.speechSynthesis.addEventListener('voiceschanged',loadVoices)}
+    soundStatus('เสียงจีน Neural · เลือกโหมดช้าเพื่อฝึกพูดตาม');
     document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSpeech()});
     const teachContent={
       tone:`<h4>เสียงวรรณยุกต์ 4 เสียง + เสียงเบา</h4><p>ระดับเสียงทำให้ความหมายเปลี่ยน แตะแต่ละคำเพื่อฟังและพูดตามช้า ๆ</p><div class="tones"><button class="tone" onclick="speak('妈')"><b>mā</b><small>เสียง 1 สูงราบ</small></button><button class="tone" onclick="speak('麻')"><b>má</b><small>เสียง 2 สูงขึ้น</small></button><button class="tone" onclick="speak('马')"><b>mǎ</b><small>เสียง 3 ต่ำแล้วขึ้น</small></button><button class="tone" onclick="speak('骂')"><b>mà</b><small>เสียง 4 ตกแรง</small></button><button class="tone" onclick="speak('吗')"><b>ma</b><small>เสียงเบา</small></button></div><div class="tip">เคล็ดลับ: ฟังหนึ่งครั้ง แล้วพูดตามโดยเลียนแบบระดับเสียง ไม่ใช่แค่อ่านตัวสะกด</div>`,
