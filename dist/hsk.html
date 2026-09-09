@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="th">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d9482b"><title>HSK 1–5 · ห่าวเลอ</title><link rel="stylesheet" href="hsk.css"><script defer src="hsk.js"></script></head>
+<body><main class="shell">
+<header><a class="brand" href="./index.html"><span class="seal">好</span><strong>ห่าวเลอ</strong></a><a href="./index.html">กลับบทเรียนพื้นฐาน ↗</a></header>
+<section class="intro"><span class="eyebrow">HSK 3.0 · หลักสูตรสอบ 2026</span><h1>ศัพท์จีน ทีละชุด</h1><p>ระดับ 1–5 รวม 3,600 รายการ · เลือกระดับ แล้วเริ่มฟังและทบทวน</p></section>
+<section class="workspace">
+<div class="controls"><label>ระดับ<select id="level"><option value="1">HSK 1 · 300 รายการ</option><option value="2">HSK 2 · เพิ่ม 200 รายการ</option><option value="3">HSK 3 · เพิ่ม 500 รายการ</option><option value="4">HSK 4 · เพิ่ม 1,000 รายการ</option><option value="5">HSK 5 · เพิ่ม 1,600 รายการ</option><option value="all">ทุกระดับ · 3,600 รายการ</option></select></label><label class="search">ค้นหาศัพท์<input id="search" type="search" placeholder="ตัวจีน พินอิน หรือคำแปลไทย" autocomplete="off"></label><label>เสียง<select id="speed"><option value="1">ธรรมชาติ</option><option value="0.85">ช้า · ฝึกตาม</option></select></label><button id="stop" class="secondary">หยุดเสียง</button></div>
+<div class="toolbar"><label><input id="unknownOnly" type="checkbox"> เฉพาะคำที่ยังไม่จำ</label><span id="progress">กำลังโหลด…</span><button id="startQuiz" disabled>ฝึกชุดนี้</button></div>
+<p id="audioStatus" role="status" aria-live="polite">เสียงสังเคราะห์จีนกลาง Neural · แตะปุ่มฟังในแต่ละคำ</p>
+<p class="note">ศัพท์และพินอินตามหลักสูตรทางการ คำแปลไทยเรียบเรียงด้วย AI เพื่อประกอบการเรียน โดยเลือกความหมายหลัก คำบางคำมีความหมายต่างออกไปตามบริบท</p>
+<p id="loadStatus" role="status">กำลังโหลดคลังศัพท์…</p><div id="cards" class="cards"></div>
+<nav class="pages" aria-label="ชุดคำศัพท์"><button id="prev" class="secondary" disabled>← ชุดก่อน</button><label>ชุดที่ <select id="page" aria-label="เลือกชุดคำศัพท์"></select></label><span id="pageSummary"></span><button id="next" class="secondary" disabled>ชุดถัดไป →</button></nav>
+</section>
+<dialog id="quiz"><div class="quiz-head"><h2>ทบทวนชุดนี้</h2><button id="closeQuiz" class="secondary" aria-label="ปิดแบบฝึกหัด">ปิด ✕</button></div><p id="quizCount"></p><h3 id="question"></h3><div id="answers" class="answers"></div><p id="feedback" role="status" aria-live="polite"></p><button id="nextQuestion" hidden>ข้อต่อไป →</button><p class="note">เลือกคำแปลตามคลังศัพท์ชุดนี้ คำหนึ่งอาจมีความหมายอื่นในบริบทต่างกัน</p></dialog>
+<footer>อ้างอิง <a href="https://www.chinesetest.cn/syllabus" target="_blank" rel="noopener">HSK Examination Syllabus</a> ฉบับเผยแพร่ พ.ย. 2025 / เริ่มใช้ ก.ค. 2026 · นับคำเพิ่มในแต่ละระดับตามรายการหลักสูตร<br>คำแปลไทยและแบบฝึกหัดจัดทำประกอบการเรียน ไม่ใช่คำแปลหรือข้อสอบทางการ<br>ความก้าวหน้าบันทึกเฉพาะเบราว์เซอร์นี้</footer>
+</main></body></html>
