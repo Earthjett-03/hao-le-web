@@ -18,14 +18,15 @@ if (typeof module !== 'undefined') module.exports=HskCore;
 if (typeof document !== 'undefined') (() => {
   const $=id=>document.getElementById(id), size=20;
   let rows=[], filtered=[], page=0, known=new Set(), player=null, audioId=null, request=0, timer;
-  let quizItems=[], qi=0, score=0, answered=false, loading=false;
+  let quizItems=[], qi=0, score=0, answered=false, loading=false, examples={};
   try { const saved=JSON.parse(localStorage.getItem('hao-hsk2026-known')||'[]'); if(Array.isArray(saved))known=new Set(saved.filter(id=>Number.isInteger(id)&&id>=1&&id<=3600)); } catch {}
   const node=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n};
   function stop(){request++;clearTimeout(timer);if(player){player.pause();player.removeAttribute('src');player.load();player=null}audioId=null;}
-  function play(row){
-    if(audioId===row.id&&player)return;
-    stop();const serial=request;audioId=row.id;
-    const a=new Audio('./hsk-audio/'+row.id+'.mp3');player=a;a.playbackRate=Number($('speed').value);a.preservesPitch=true;
+  function play(row, example=false){
+    const key=(example?'example:':'word:')+row.id;
+    if(audioId===key&&player)return;
+    stop();const serial=request;audioId=key;
+    const a=new Audio(example?'./example-audio/'+row.audio+'.mp3':'./hsk-audio/'+row.id+'.mp3');player=a;a.playbackRate=Number($('speed').value);a.preservesPitch=true;
     $('audioStatus').textContent='กำลังโหลดเสียง '+row.word+'…';
     const fail=()=>{if(serial!==request)return;stop();$('audioStatus').textContent='เล่นเสียงไม่ได้ ตรวจอินเทอร์เน็ตแล้วแตะเพื่อลองอีกครั้ง';};
     timer=setTimeout(fail,15000);
@@ -46,6 +47,19 @@ if (typeof document !== 'undefined') (() => {
       const actions=node('div',undefined,'card-actions');const listen=node('button','🔊 ฟัง');listen.setAttribute('aria-label','ฟัง '+r.word);listen.onclick=()=>play(r);
       const mark=node('button',known.has(r.id)?'✓ จำได้แล้ว':'จำได้แล้ว','secondary');mark.setAttribute('aria-pressed',String(known.has(r.id)));mark.onclick=()=>{known.has(r.id)?known.delete(r.id):known.add(r.id);saveKnown();render();};
       actions.append(listen,mark);card.append(actions);$('cards').append(card);
+      const ex=examples[r.id];
+      if(ex){
+        const block=node('section',undefined,'example');block.setAttribute('aria-label','ประโยคตัวอย่างของ '+r.word);
+        block.append(node('span','ประโยคตัวอย่าง','example-label'));
+        const chinese=node('p',undefined,'example-zh');chinese.lang='zh-CN';
+        const at=ex.zh.indexOf(r.word);
+        if(at>=0)chinese.append(document.createTextNode(ex.zh.slice(0,at)),node('mark',r.word),document.createTextNode(ex.zh.slice(at+r.word.length)));
+        else chinese.textContent=ex.zh;
+        const pinyin=node('p',ex.pinyin,'example-pinyin');pinyin.lang='zh-Latn';
+        const hear=node('button','🔊 ฟังประโยค','secondary');hear.setAttribute('aria-label','ฟังประโยค '+ex.zh);
+        hear.onclick=()=>play({id:ex.audio,audio:ex.audio,word:ex.zh,pinyin:ex.pinyin},true);
+        block.append(chinese,pinyin,node('p',ex.thai,'example-thai'),hear);card.append(block);
+      }
     });
     $('page').replaceChildren(...Array.from({length:totalPages},(_,i)=>{const o=node('option',String(i+1));o.value=String(i);return o}));$('page').value=String(page);
     $('pageSummary').textContent='/ '+totalPages+' ชุด · '+filtered.length.toLocaleString('th-TH')+' รายการ';
@@ -87,4 +101,18 @@ if (typeof document !== 'undefined') (() => {
     finally{loading=false;}
   }
   load();
+  async function loadExamples(){
+    const status=$('exampleStatus');
+    try{
+      const response=await fetch('./hsk-examples.json');if(!response.ok)throw Error('Examples unavailable');
+      const data=await response.json();
+      if(Object.keys(data).length!==300||Object.values(data).some(e=>!e.zh||!e.pinyin||!e.thai||!/^[a-f0-9]{16}$/.test(e.audio)))throw Error('Invalid examples');
+      examples=data;status.textContent='ใหม่ · HSK 1 มีประโยคตัวอย่างครบ 300 คำ พร้อมพินอิน คำแปลไทย และเสียง · ระดับ 2–5 ยังไม่มีประโยคตัวอย่าง';
+      if(rows.length)render();
+    }catch{
+      status.replaceChildren(node('span','โหลดประโยคตัวอย่างไม่สำเร็จ แต่ยังท่องศัพท์ได้ '));
+      const retry=node('button','โหลดตัวอย่างอีกครั้ง','secondary');retry.onclick=()=>{retry.disabled=true;loadExamples();};status.append(retry);
+    }
+  }
+  loadExamples();
 })();
