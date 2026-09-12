@@ -52,7 +52,7 @@ if (typeof document !== 'undefined') (() => {
         const block=node('section',undefined,'example');block.setAttribute('aria-label','ประโยคตัวอย่างของ '+r.word);
         block.append(node('span','ประโยคตัวอย่าง','example-label'));
         const chinese=node('p',undefined,'example-zh');chinese.lang='zh-CN';
-        const at=ex.zh.indexOf(r.word);
+        const at=Number.isInteger(ex.start)&&ex.zh.slice(ex.start,ex.start+r.word.length)===r.word?ex.start:ex.zh.indexOf(r.word);
         if(at>=0)chinese.append(document.createTextNode(ex.zh.slice(0,at)),node('mark',r.word),document.createTextNode(ex.zh.slice(at+r.word.length)));
         else chinese.textContent=ex.zh;
         const pinyin=node('p',ex.pinyin,'example-pinyin');pinyin.lang='zh-Latn';
@@ -104,10 +104,10 @@ if (typeof document !== 'undefined') (() => {
   async function loadExamples(){
     const status=$('exampleStatus');
     try{
-      const response=await fetch('./hsk-examples.json');if(!response.ok)throw Error('Examples unavailable');
+      const response=await fetch('./hsk-examples.json?v=all-levels-1');if(!response.ok)throw Error('Examples unavailable');
       const data=await response.json();
-      if(Object.keys(data).length!==300||Object.values(data).some(e=>!e.zh||!e.pinyin||!e.thai||!/^[a-f0-9]{16}$/.test(e.audio)))throw Error('Invalid examples');
-      examples=data;status.textContent='ใหม่ · HSK 1 มีประโยคตัวอย่างครบ 300 คำ พร้อมพินอิน คำแปลไทย และเสียง · ระดับ 2–5 ยังไม่มีประโยคตัวอย่าง';
+      if(Object.keys(data).length!==3600||Array.from({length:3600},(_,i)=>data[i+1]).some(e=>!e||!e.zh||!e.pinyin||!e.thai||!/^[a-f0-9]{16}$/.test(e.audio)))throw Error('Invalid examples');
+      examples=data;status.textContent='HSK 1–5 · ทุกคำมีประโยคตัวอย่าง พร้อมพินอิน คำแปลไทย และเสียง รวม 3,600 คำ';
       if(rows.length)render();
     }catch{
       status.replaceChildren(node('span','โหลดประโยคตัวอย่างไม่สำเร็จ แต่ยังท่องศัพท์ได้ '));
