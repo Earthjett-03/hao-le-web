@@ -95,7 +95,7 @@ if (typeof document !== 'undefined') (() => {
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   async function load(){
     if(loading)return;loading=true;$('loadStatus').textContent='กำลังโหลดคลังศัพท์…';
-    try{const response=await fetch('./hsk-data.json');if(!response.ok)throw Error('Load failed');const data=await response.json();
+    try{const response=await fetch('./hsk-data.json?v=corrections-1');if(!response.ok)throw Error('Load failed');const data=await response.json();
       if(!Array.isArray(data)||data.length!==3600||data.some(r=>!r.word||!r.pinyin||!r.thai))throw Error('Incomplete data');rows=data;render();
     }catch{$('loadStatus').replaceChildren(node('span','โหลดคลังศัพท์ไม่ได้ '));const retry=node('button','ลองอีกครั้ง');retry.onclick=load;$('loadStatus').append(retry);}
     finally{loading=false;}
@@ -104,7 +104,7 @@ if (typeof document !== 'undefined') (() => {
   async function loadExamples(){
     const status=$('exampleStatus');
     try{
-      const response=await fetch('./hsk-examples.json?v=all-levels-1');if(!response.ok)throw Error('Examples unavailable');
+      const response=await fetch('./hsk-examples.json?v=corrections-1');if(!response.ok)throw Error('Examples unavailable');
       const data=await response.json();
       if(Object.keys(data).length!==3600||Array.from({length:3600},(_,i)=>data[i+1]).some(e=>!e||!e.zh||!e.pinyin||!e.thai||!/^[a-f0-9]{16}$/.test(e.audio)))throw Error('Invalid examples');
       examples=data;status.textContent='HSK 1–5 · ทุกคำมีประโยคตัวอย่าง พร้อมพินอิน คำแปลไทย และเสียง รวม 3,600 คำ';

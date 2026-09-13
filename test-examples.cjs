@@ -9,6 +9,22 @@ for(const r of rows){
   const b=fs.readFileSync('example-audio/'+e.audio+'.mp3');assert(b.length>1000);
   assert(b.subarray(0,3).toString()==='ID3'||(b[0]===255&&(b[1]&224)===224));
 }
+for(const [id,zh,thai,pinyin] of [
+  [357,'买这块手表花了我五百元。','ใช้จ่ายเงินหรือเวลา'],
+  [358,'红色的花旁边有绿色的叶子。','ดอกไม้'],
+  [403,'请看纸的另一面。','ด้าน / หน้า / พื้นผิว'],
+  [486,'到下一站后，我们骑自行车回家。','สถานี / ป้าย'],
+  [966,'请站起来，活动一下。','ยืน'],
+  [1650,'云南省是我最喜欢的省份之一，省会是昆明。','มณฑล'],
+  [2767,'我们在饭馆点了两碗面。','แป้ง / เส้นบะหมี่'],
+  [2998,'骑车上班可以省钱。','ประหยัด / ลด'],
+  [3184,'这种做法不为大家所接受。','ถูก… (รูปถูกกระทำ)','wèi']
+]){
+  assert.equal(examples[id].zh,zh,'Incorrect corrected example '+id);
+  assert.equal(rows[id-1].thai,thai,'Incorrect corrected meaning '+id);
+  if(pinyin) assert.equal(rows[id-1].pinyin,pinyin,'Incorrect corrected pinyin '+id);
+}
+for(const [id,zh] of [[46,'今天来的人很多。'],[86,'我家在学校旁边。'],[214,'孩子们在公园里玩。'],[252,'我明天要去医院。']]) assert.equal(examples[id].zh,zh,'Weak example not replaced '+id);
 class El{
   constructor(tag='div'){this.tagName=tag;this.children=[];this.value='';this.checked=false;this.hidden=false;this.attributes={};this.classList={add:()=>{}};this.textContent='';}
   append(...children){this.children.push(...children);}

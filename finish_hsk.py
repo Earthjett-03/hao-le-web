@@ -7,10 +7,16 @@ for path in sorted(ROOT.glob('thai-manual-*.json')):
     values=json.loads(path.read_text(encoding='utf-8'))
     assert not (thai.keys() & values.keys()), f'Duplicate translations in {path}'
     thai.update(values)
+corrections=json.loads((ROOT/'hsk-corrections.json').read_text(encoding='utf-8'))
+for key, values in corrections.items():
+    if 'thai' in values:
+        thai[key]=values['thai']
 assert set(thai)=={str(n) for n in range(1,3601)}
 for row in rows:
     row['thai']=thai[str(row['id'])]
     row['reviewed']=True
+    if str(row['id']) in corrections and 'pinyin' in corrections[str(row['id'])]:
+        row['pinyin']=corrections[str(row['id'])]['pinyin']
     row.pop('english',None)
     row.pop('dictionarySource',None)
     assert row['thai'].strip() and row['word'] and row['pinyin']
