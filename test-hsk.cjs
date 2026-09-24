@@ -6,6 +6,7 @@ assert.equal(rows.length,3600);
 assert.deepEqual(rows.map(r=>r.id),Array.from({length:3600},(_,i)=>i+1));
 assert.deepEqual([1,2,3,4,5].map(l=>rows.filter(r=>r.level===l).length),[300,200,500,1000,1600]);
 assert(rows.every(r=>r.word&&r.pinyin&&r.thai));
+assert.equal(rows[3183].pinyin,'wèi','Corrected pronunciation for 为 was not applied');
 assert.equal(core.filterRows(rows,'1','',false,new Set()).length,300);
 assert.equal(core.filterRows(rows,'all','',true,new Set([1,2])).length,3598);
 assert(core.filterRows(rows,'1','nihao',false,new Set()).some(r=>r.word==='你好'));

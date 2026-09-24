@@ -1,8 +1,9 @@
-import asyncio,json,re,time,urllib.request,urllib.parse,concurrent.futures
+import asyncio,json,re,sys,time,urllib.request,urllib.parse,concurrent.futures
 from pathlib import Path
 import edge_tts
 ROOT=Path(__file__).parent
 rows=json.loads((ROOT/'hsk-data.json').read_text(encoding='utf-8'))
+corrections=json.loads((ROOT/'hsk-corrections.json').read_text(encoding='utf-8'))
 cachepath=ROOT/'sources/thai-cache.json'
 cache=json.loads(cachepath.read_text(encoding='utf-8')) if cachepath.exists() else {}
 
@@ -52,7 +53,10 @@ async def audio():
         nonlocal done
         target=out/f"{r['id']}.mp3"
         async with semaphore:
-            if not(target.exists() and target.stat().st_size>1000):
+            # A pinyin correction can change the intended pronunciation even
+            # when the Chinese spelling is unchanged, so do not reuse its clip.
+            refresh_audio='pinyin' in corrections.get(str(r['id']),{})
+            if refresh_audio or not(target.exists() and target.stat().st_size>1000):
                 for attempt in range(4):
                     try:
                         await asyncio.wait_for(edge_tts.Communicate(r['word'],'zh-CN-XiaoxiaoNeural',rate='-15%').save(str(target)),timeout=45)
@@ -68,6 +72,9 @@ async def audio():
     print('Audio complete',done,flush=True)
 
 async def main():
+    if '--audio-only' in sys.argv:
+        await audio()
+        return
     results=await asyncio.gather(asyncio.to_thread(translations),audio(),return_exceptions=True)
     for result in results:
         if isinstance(result,Exception):raise result

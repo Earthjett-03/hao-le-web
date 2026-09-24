@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
+from build_hsk import load_base_rows
 ROOT=Path(__file__).parent
-rows=json.loads((ROOT/'hsk-data.json').read_text(encoding='utf-8'))
+rows=load_base_rows()
 thai=json.loads((ROOT/'thai-overrides.json').read_text(encoding='utf-8'))
 for path in sorted(ROOT.glob('thai-manual-*.json')):
     values=json.loads(path.read_text(encoding='utf-8'))
